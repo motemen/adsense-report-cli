@@ -52,6 +52,7 @@ func main() {
 		from      = flagSet.String("from", "today-6d", "date range, from")
 		to        = flagSet.String("to", "today", "date range, to")
 		noHeader  = flagSet.Bool("no-header", false, "do not show header")
+		forceAuth = flagSet.Bool("force-auth", false, "force authorization")
 	)
 
 	flagSet.Parse(os.Args[1:])
@@ -61,7 +62,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	client := prepareOAuthClient(config)
+	client := prepareOAuthClient(config, *forceAuth)
 
 	adsenseService, err := adsense.New(client)
 	if err != nil {
@@ -137,7 +138,7 @@ func loadOAuthConfig() (*oauth.Config, error) {
 	var cs clientSecret
 	err := loadJSONFromFile(filepath.Join(rootDirectory, "client_secret.json"), &cs)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s; obtain one at <https://console.developers.google.com/project>", err)
 	}
 
 	config := &oauth.Config{
@@ -153,11 +154,18 @@ func loadOAuthConfig() (*oauth.Config, error) {
 	return config, nil
 }
 
-func prepareOAuthClient(config *oauth.Config) *http.Client {
+func prepareOAuthClient(config *oauth.Config, useFresh bool) *http.Client {
 	token := &oauth.Token{}
-	err := loadJSONFromFile(filepath.Join(rootDirectory, "auth_cache.json"), token)
 
-	if err != nil {
+	if useFresh == false {
+		err := loadJSONFromFile(filepath.Join(rootDirectory, "auth_cache.json"), token)
+		if err != nil {
+			useFresh = true
+		}
+	}
+
+	if useFresh {
+		config.ApprovalPrompt = "force"
 		token = obtainToken(config)
 	}
 
