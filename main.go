@@ -16,7 +16,7 @@ import (
 	"text/tabwriter"
 
 	"code.google.com/p/goauth2/oauth"
-	adsense "code.google.com/p/google-api-go-client/adsense/v1.4"
+	adsense "google.golang.org/api/adsense/v1.4"
 )
 
 type clientSecret struct {
