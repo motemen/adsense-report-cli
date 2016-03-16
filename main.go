@@ -34,7 +34,7 @@ func init() {
 		panic(err)
 	}
 
-	rootDirectory = filepath.Join(usr.HomeDir, ".adsense-report-cli")
+	rootDirectory = filepath.Join(usr.HomeDir, ".config", "adsense-report-cli")
 }
 
 func main() {
